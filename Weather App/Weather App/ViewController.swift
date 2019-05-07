@@ -8,13 +8,38 @@
 
 import UIKit
 
-class ViewController: UIViewController {
 
+
+
+
+class ViewController: UIViewController {
+  
+  let gradientLayer = CAGradientLayer()
+  
+  
   override func viewDidLoad() {
     super.viewDidLoad()
-    // Do any additional setup after loading the view.
+    backgroundView.layer.addSublayer(gradientLayer)
   }
 
-
+  @IBOutlet weak var locationLabel: UILabel!
+  @IBOutlet weak var dayLabel: UILabel!
+  @IBOutlet weak var conditionalImageView: UIImageView!
+  @IBOutlet weak var conditionLabel: UILabel!
+  @IBOutlet weak var temperatureLabel: UILabel!
+  @IBOutlet weak var backgroundView: UIView!
+  
+  override func viewWillAppear(_ animated: Bool) {
+    setBlueGradientBackground()
+  }
+  
+  func setBlueGradientBackground(){
+  
+  }
+  
+  func setGreyGradientBackground(){
+    
+  }
+  
 }
 
