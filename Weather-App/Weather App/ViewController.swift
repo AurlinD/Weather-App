@@ -11,15 +11,16 @@ import Alamofire
 import NVActivityIndicatorView
 import SwiftyJSON
 import CoreLocation
+import Foundation
 
 
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, CLLocationManagerDelegate {
   
   let gradientLayer = CAGradientLayer()
   let apiKey = "9b2fb5dca9b26bd478e68abba09a4392"
-  let lat = 49.2827
-  let lon = 123.1207
+  var lat = 20
+  var lon = 123
   var activityIndicator: NVActivityIndicatorView!
   let locationManager = CLLocationManager()
   
@@ -31,11 +32,19 @@ class ViewController: UIViewController {
     let indicatorFrame = CGRect(x: (view.frame.width-indicatorSize)/2, y: (view.frame.height-indicatorSize)/2, width: indicatorSize, height: indicatorSize)
     activityIndicator = NVActivityIndicatorView(frame: indicatorFrame, type: .lineScale, color: UIColor.white, padding: 20.0)
     activityIndicator.backgroundColor = UIColor.black
-    view.didAddSubview(activityIndicator)
+    view.addSubview(activityIndicator)
     
     //activityIndicator.startAnimating()
     // activityIndicator.stopAnimating()
     
+    locationManager.requestWhenInUseAuthorization()
+    
+    activityIndicator.startAnimating()
+    if(CLLocationManager.locationServicesEnabled()){
+      locationManager.delegate = self
+      locationManager.desiredAccuracy = kCLLocationAccuracyBest
+      locationManager.startUpdatingLocation()
+    }
   }
 
   @IBOutlet weak var locationLabel: UILabel!
@@ -47,6 +56,49 @@ class ViewController: UIViewController {
   
   override func viewWillAppear(_ animated: Bool) {
     setBlueGradientBackground()
+  }
+  
+  // will be called when location information is UPDATED
+  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    let location  = locations[0]
+    lat = Int(location.coordinate.latitude)
+    lon = Int(location.coordinate.longitude)
+   // read the doccumentation of the API return query
+    
+    Alamofire.request("https://api.openweathermap.org/data/2.5/weather?q=Vancouver,ca&appid=\(apiKey)").responseJSON{
+      response in
+      self.activityIndicator.stopAnimating()
+      if let responseStr = response.result.value {
+        let jsonResponse = JSON(responseStr)
+        let jsonWeather = jsonResponse["weather"].array![0]
+        let jsonTemp = jsonResponse["main"]
+        let iconName = jsonWeather["icon"].stringValue
+        
+        self.locationLabel.text = jsonResponse["name"].stringValue
+        self.conditionalImageView.image = UIImage(named : iconName)
+        self.conditionLabel.text = jsonWeather["main"].stringValue
+        // round to avoid decimal values
+        self.temperatureLabel.text = "\(Int(round(jsonTemp["temp"].doubleValue)))"
+        
+        let date = Date()
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = "EEEE"
+        self.dayLabel.text = dateFormatter.string(from: date)
+        
+        let suffix = iconName.suffix(1)
+        if(suffix == "n"){
+          self.setGreyGradientBackground()
+        }
+        else{
+          self.setBlueGradientBackground()
+        }
+      }
+    }
+    self.locationManager.stopUpdatingLocation()
+  }
+  
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+    print(error.localizedDescription)
   }
   
   func setBlueGradientBackground(){
