@@ -19,10 +19,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
   
   let gradientLayer = CAGradientLayer()
   let apiKey = "9b2fb5dca9b26bd478e68abba09a4392"
-  var lat = 20
-  var lon = 123
+  var lat = 49.2827
+  var lon = 123.1207
   var activityIndicator: NVActivityIndicatorView!
   let locationManager = CLLocationManager()
+  var jsonKelvin = 0
+  var numberFromString = 0
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -61,11 +63,11 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
   // will be called when location information is UPDATED
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
     let location  = locations[0]
-    lat = Int(location.coordinate.latitude)
-    lon = Int(location.coordinate.longitude)
+    lat = Double(location.coordinate.latitude)
+    lon = Double(location.coordinate.longitude)
    // read the doccumentation of the API return query
     
-    Alamofire.request("https://api.openweathermap.org/data/2.5/weather?q=Vancouver,ca&appid=\(apiKey)").responseJSON{
+    Alamofire.request("https://api.openweathermap.org/data/2.5/weather?lat=\(lat)&lon=\(lon)&appid=\(apiKey)&units=metric").responseJSON{
       response in
       self.activityIndicator.stopAnimating()
       if let responseStr = response.result.value {
